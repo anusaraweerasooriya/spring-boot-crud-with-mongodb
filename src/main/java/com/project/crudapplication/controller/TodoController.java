@@ -64,11 +64,11 @@ public class TodoController {
     public ResponseEntity<?> updateById(@PathVariable("id") String id, @RequestBody TodoDTO todo) {
         try {
             todoService.updateTodo(id, todo);
-            return new ResponseEntity<>("Update Todo with id" +id, HttpStatus.OK);
+            return new ResponseEntity<>("Update Todo with id" + id, HttpStatus.OK);
 
         } catch (ConstraintViolationException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
-        } catch(TodoCollectionException e) {
+        } catch (TodoCollectionException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
@@ -76,9 +76,9 @@ public class TodoController {
     @DeleteMapping("/todos/{id}")
     public ResponseEntity<?> deleteById(@PathVariable("id") String id) {
         try {
-            todoRepo.deleteById(id);
+            todoService.deleteTodoById(id);
             return new ResponseEntity<>("Successfully deleted with id " + id, HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (TodoCollectionException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
