@@ -16,14 +16,21 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.project.crudapplication.exception.TodoCollectionException;
 import com.project.crudapplication.model.TodoDTO;
 import com.project.crudapplication.repository.TodoRepository;
+import com.project.crudapplication.service.TodoService;
+
+import jakarta.validation.ConstraintViolationException;
 
 @RestController
 public class TodoController {
 
     @Autowired
     private TodoRepository todoRepo;
+
+    @Autowired
+    private TodoService todoService;
 
     @GetMapping("/todos")
     public ResponseEntity<?> getAllTodos() {
@@ -40,11 +47,12 @@ public class TodoController {
     @PostMapping("/todos")
     public ResponseEntity<?> createTodo(@RequestBody TodoDTO todo) {
         try {
-            todo.setCreatedAt(new Date(System.currentTimeMillis()));
-            todoRepo.save(todo);
+            todoService.createTodo(todo);
             return new ResponseEntity<TodoDTO>(todo, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (ConstraintViolationException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+        } catch (TodoCollectionException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
     }
 
@@ -84,7 +92,7 @@ public class TodoController {
             todoRepo.deleteById(id);
             return new ResponseEntity<>("Successfully deleted with id " + id, HttpStatus.OK);
         } catch (Exception e) {
-           return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 }
