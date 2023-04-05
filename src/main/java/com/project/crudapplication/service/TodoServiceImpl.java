@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import javax.swing.ToolTipManager;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +52,31 @@ public class TodoServiceImpl implements TodoService {
         } else {
             return optionalTodo.get();
         }
+    }
+
+    @Override
+    public void updateTodo(String id, TodoDTO todo) throws TodoCollectionException {
+        Optional<TodoDTO> todoWithId = todoRepo.findById(id);
+
+        Optional<TodoDTO> todoWithSameName = todoRepo.findByTodo(todo.getTodo());
+
+        if (todoWithId.isPresent()) {
+
+            if (todoWithSameName.isPresent() && !todoWithSameName.get().getId().equals(id)) {
+                throw new TodoCollectionException(TodoCollectionException.TodoAlreadyExists());
+            }
+
+            TodoDTO todoToUpdate = todoWithId.get();
+
+            todoToUpdate.setTodo(todo.getTodo());
+            todoToUpdate.setDescription(todo.getDescription());
+            todoToUpdate.setCompleted(todo.getCompleted());
+            todoToUpdate.setUpdatedAt(new Date(System.currentTimeMillis()));
+            todoRepo.save(todoToUpdate);
+        } else {
+            throw new TodoCollectionException(TodoCollectionException.NotFoundException(id));
+        }
+
     }
 
 }
